@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{background:#0f0f0f;color:white;font-family:Arial;margin:0;padding:0;padding-bottom:80px}
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;background:#0f0f0f;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#splash .logo-big{width:110px;height:110px;background:linear-gradient(135deg,#2AABEE,#00FF88);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:60px;border:3px solid white;animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.5)}100%{transform:scale(1)}}
+.loader{width:120px;height:5px;background:#333;border-radius:10px;margin-top:20px;overflow:hidden}
+.loader div{height:100%;width:0%;background:#2AABEE;transition:width 2s}
+.top{padding:15px;text-align:center;position:relative}
+.logo{width:70px;height:70px;background:linear-gradient(135deg,#2AABEE,#00FF88);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:35px;border:2px solid white}
+.bell{position:absolute;top:15px;right:15px;background:#1e1e1e;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:1px solid #333}
+.badge{position:absolute;top:-4px;right:-4px;background:red;color:white;font-size:11px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.notif-box{display:none;background:#1e1e1e;margin:0 12px 10px;padding:12px;border-radius:12px;text-align:left;border:1px solid #FFC107}
+.notice{background:#FFC107;color:#000;margin:12px;padding:10px;border-radius:10px;font-size:13px;text-align:center;font-weight:bold}
+.balance{background:#1e1e1e;margin:0 12px;padding:16px;border-radius:14px;text-align:center;border:1px solid #2AABEE}
+.stats{display:flex;gap:8px;margin:12px}
+.stat{flex:1;background:#1e1e1e;padding:10px;border-radius:10px;font-size:12px;text-align:center}
+.task{background:#1e1e1e;margin:10px 12px;padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center}
+.btn{background:#2AABEE;color:white;border:none;padding:10px 16px;border-radius:10px;font-weight:bold}
+.btn-green{background:#00C853;color:white;border:none;padding:12px;border-radius:10px;width:100%;font-weight:bold;font-size:15px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;display:flex;border-top:1px solid #333;padding:6px 0}
+.bottom button{flex:1;background:none;border:none;color:#aaa;font-size:11px;padding:6px}
+.bottom button.active{color:#2AABEE;font-weight:bold}
+.bottom span{font-size:20px;display:block}
+.box{padding:0 12px}
+input,select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none;background:#333;color:white}
+.card{background:#1e1e1e;padding:15px;border-radius:12px;margin:10px 0;text-align:left}
+</style>
+</head>
+<body>
+
+<div id="splash">
+<div class="logo-big">💰</div>
+<h2>🌍 Global Cash Rewards</h2>
+<p style="color:#aaa;margin:0">Earn Money Worldwide</p>
+<div class="loader"><div id="loadBar"></div></div>
+</div>
+
+<div id="app" style="display:none">
+<div class="top">
+<div class="bell" onclick="toggleNotif()">🔔<div class="badge" id="badge">3</div></div>
+<div class="logo">💰</div>
+<h2 style="margin:8px 0 2px">🌍 Global Cash Rewards</h2>
+<small style="color:#aaa">Earn Money • Worldwide • Clickworker Style</small>
+</div>
+
+<div class="notif-box" id="notifBox">
+<b>🔔 Notifications</b><br><br>
+✅ Welcome to Global Cash Rewards!<br>
+🎁 New Task Available - Survey $6.16<br>
+💰 Complete tasks to earn money<br>
+</div>
+
+<div class="notice">⚠️ NOTICE: 1 Person = 1 Account • No VPN • Fake Work Will Result In Ban</div>
+
+<div class="balance">
+<div style="font-size:13px;color:#aaa">💰 Total Balance</div>
+<div style="font-size:26px;font-weight:bold">$<span id="bal">0.00</span></div>
+<div style="font-size:12px;color:#aaa">Min Withdraw: $10.00</div>
+</div>
+
+<div class="stats">
+<div class="stat">✅ Completed<br><b id="done">0 Tasks</b></div>
+<div class="stat">⏳ Pending<br><b>$0.00</b></div>
+<div class="stat">👥 Refer<br><b>$0.50 / Person</b></div>
+</div>
+
+<div id="main"></div>
+
+<div class="bottom">
+<button class="active" onclick="nav('home',this)"><span>🏠</span>Home</button>
+<button onclick="nav('tasks',this)"><span>📋</span>Tasks</button>
+<button onclick="nav('refer',this)"><span>👥</span>Refer</button>
+<button onclick="nav('account',this)"><span>👤</span>Account</button>
+<button onclick="nav('withdraw',this)"><span>📤</span>Withdraw</button>
+</div>
+</div>
+
+<script>
+Telegram.WebApp.ready(); Telegram.WebApp.expand();
+// SPLASH 2 SECONDS
+document.getElementById('loadBar').style.width='100%';
+setTimeout(()=>{
+  document.getElementById('splash').style.display='none';
+  document.getElementById('app').style.display='block';
+  checkSignup();
+},2000);
+
+let bal = parseFloat(localStorage.getItem('gcr_bal')||'0');
+let done = parseInt(localStorage.getItem('gcr_done')||'0');
+let userName = localStorage.getItem('gcr_name')||'';
+let userEmail = localStorage.getItem('gcr_email')||'';
+
+function checkSignup(){
+  if(!userName){
+    nav('account', null);
+  } else {
+    nav('home', null);
+  }
+}
+function doSignup(){
+  let n=document.getElementById('su_name').value;
+  let e=document.getElementById('su_email').value;
+  let p=document.getElementById('su_pass').value;
+  if(!n || !e || !p){ alert('Please fill all fields'); return; }
+  localStorage.setItem('gcr_name', n);
+  localStorage.setItem('gcr_email', e);
+  userName=n; userEmail=e;
+  alert('✅ Welcome '+n+'! Account Created Successfully');
+  nav('home', document.querySelectorAll('.bottom button')[0]);
+}
+function update(){ document.getElementById('bal').innerText=bal.toFixed(2); document.getElementById('done').innerText=done+' Tasks'; }
+function toggleNotif(){
+  let n=document.getElementById('notifBox');
+  n.style.display = n.style.display=='block' ? 'none' : 'block';
+  document.getElementById('badge').style.display='none';
+}
+function addMoney(amount, name){
+  bal += amount; done++;
+  localStorage.setItem('gcr_bal', bal); localStorage.setItem('gcr_done', done);
+  update(); alert('✅ '+name+' Completed! $'+amount+' Added');
+  nav('home', document.querySelectorAll('.bottom button')[0]);
+}
+function nav(type, el){
+  document.querySelectorAll('.bottom button').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  let m=document.getElementById('main');
+  if(type=='home' || type=='tasks'){
+    m.innerHTML='<h3 style="padding:0 12px">📋 Available Tasks</h3>'+
+    '<div class="task"><div><b>📝 Survey - Apple Pay</b><br><small>10-15 min • Easy</small><br><b style="color:#00FF88">$6.16</b></div><button class="btn" onclick="addMoney(6.16,\'Survey\')">Start</button></div>'+
+    '<div class="task"><div><b>📄 Data Entry</b><br><small>5-8 min • Easy</small><br><b style="color:#00FF88">$2.50</b></div><button class="btn" onclick="addMoney(2.50,\'Data Entry\')">Start</button></div>'+
+    '<div class="task"><div><b>📱 App Testing</b><br><small>20-30 min • Medium</small><br><b style="color:#00FF88">$4.00</b></div><button class="btn" onclick="addMoney(4.00,\'App Testing\')">Start</button></div>'+
+    '<div class="task"><div><b>🎮 Play & Earn</b><br><small>15 min • Fun</small><br><b style="color:#00FF88">$1.50</b></div><button class="btn" onclick="addMoney(1.50,\'Play & Earn\')">Start</button></div>';
+  }
+  if(type=='refer') m.innerHTML='<div class="box"><div class="card"><b>👥 Refer & Earn</b><br><br>Your Link:<br><b>https://t.me/globalcashrewards_bot?start=12345</b><br><br>Earn <b>$0.50</b> Per Refer<br>Refer 10 People = $5.00</div></div>';
+  if(type=='account'){
+    if(!userName){
+      m.innerHTML='<div class="box"><div class="card"><b>✍️ Sign Up - Create Account</b><br><br><label>Full Name:</label><input id="su_name" placeholder="Enter Your Name"><label>Email:</label><input id="su_email" placeholder="Enter Email"><label>Password:</label><input id="su_pass" type="password" placeholder="Create Password"><button class="btn-green" onclick="doSignup()">Sign Up</button><br><br><small>By signing up you agree to our Terms. 1 Person = 1 Account.</small></div></div>';
+    } else {
+      m.innerHTML='<div class="box"><div class="card"><b>👤 My Account</b><br><br>Name: '+userName+'<br>Email: '+userEmail+'<br>Balance: $'+bal.toFixed(2)+'<br>Completed: '+done+' Tasks<br>Status: ✅ Verified</div></div>';
+    }
+  }
+  if(type=='withdraw') m.innerHTML='<div class="box"><div class="card"><b>📤 Withdraw</b><br>Min: <b>$10.00</b> • Your Balance: <b>$'+bal.toFixed(2)+'</b><br><br><label>Method:</label><select><option>PayPal - International</option><option>Payoneer</option><option>Binance Pay (USDT)</option><option>USDT - TRC20</option><option>bKash / Nagad - BD</option></select><label>Wallet / Email:</label><input placeholder="PayPal Email / USDT Address"><label>Amount:</label><input type="number" placeholder="Min $10"><button class="btn-green" onclick="alert(\'Withdraw Request Sent! You will receive payment within 24-48 hours.\')">Request Withdraw</button><br><br><small>⚠️ Withdraw is manually approved. Less than $10 will not work.</small></div></div>';
+}
+update();
+</script>
+</body>
+</html>
